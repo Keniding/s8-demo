@@ -1,0 +1,12 @@
+[project]
+name = "s8-demo"
+version = "0.1.0"
+description = "Demos simples de Google ADK y Microsoft Foundry Agent Service"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "azure-ai-projects>=2.2.0",
+    "azure-identity>=1.25.3",
+    "google-adk>=1.31.0",
+    "openai>=3.14.0",
+]
