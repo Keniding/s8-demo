@@ -7,9 +7,64 @@ uv sync
 uv run python 01_agente_basico.py
 ```
 
-## Google ADK (Vertex AI)
+## Configurar Vertex AI desde cero (si nunca usaste Google Cloud)
 
-Configuración en [`adk_config.py`](./adk_config.py) — reemplazá `PROYECTO` por tu propio project id de Google Cloud (con billing activo y `aiplatform.googleapis.com` habilitado), y corré `gcloud auth application-default login` una vez.
+Los scripts de ADK necesitan un proyecto de Google Cloud propio, con billing activo y la API de Vertex AI habilitada. Estos son los pasos reales, en orden, probados en este mismo entorno:
+
+**1. Instalar la CLI de Google Cloud (`gcloud`)**, si no la tenés — instrucciones oficiales en [cloud.google.com/sdk/docs/install](https://cloud.google.com/sdk/docs/install). En Windows, también podés instalarla con `winget install Google.CloudSDK`.
+
+**2. Loguearte con tu cuenta de Google** (esto autentica la CLI en sí):
+
+```bash
+gcloud auth login
+```
+
+**3. Crear un proyecto nuevo** (o usar uno que ya tengas — en ese caso, saltá este paso y anotá su ID):
+
+```bash
+gcloud projects create MI-PROYECTO-ADK --name="Mi proyecto ADK"
+gcloud config set project MI-PROYECTO-ADK
+```
+
+El ID del proyecto (`MI-PROYECTO-ADK`) es lo que va en `PROYECTO` dentro de [`adk_config.py`](./adk_config.py).
+
+**4. Vincular una cuenta de facturación.** Vertex AI no funciona sin billing activo, aunque el uso de estos scripts (unas pocas llamadas con `gemini-2.5-flash-lite`) cuesta centavos. Primero mirá qué cuentas de facturación tenés disponibles:
+
+```bash
+gcloud billing accounts list
+```
+
+y vinculá una al proyecto:
+
+```bash
+gcloud billing projects link MI-PROYECTO-ADK --billing-account=TU_ACCOUNT_ID
+```
+
+Si no tenés ninguna cuenta de facturación todavía, se crea desde la consola de Google Cloud (requiere una tarjeta, aunque haya un tier gratuito).
+
+**5. Habilitar la API de Vertex AI** en tu proyecto — este es el paso que faltaba más seguido al validar esta demo:
+
+```bash
+gcloud services enable aiplatform.googleapis.com --project=MI-PROYECTO-ADK
+```
+
+**6. Generar las credenciales que usan los SDKs** (distintas del login de la CLI del paso 2 — esto es lo que `adk_config.py` necesita para autenticar cada llamada):
+
+```bash
+gcloud auth application-default login
+```
+
+**7. Editar `adk_config.py`**: reemplazá `PROYECTO = "agentpay-latam-lab"` por tu propio ID del paso 3. `REGION` (`us-central1`) generalmente no hace falta tocarla.
+
+**Si `gcloud` te avisa de un "mismatch" entre el proyecto y el quota project de las credenciales**, corré una vez:
+
+```bash
+gcloud auth application-default set-quota-project MI-PROYECTO-ADK
+```
+
+Con estos 7 pasos hechos una sola vez, `uv run python 01_agente_basico.py` (y el resto de los scripts de ADK) deberían andar directamente.
+
+## Google ADK (Vertex AI)
 
 - **`01_agente_basico.py`** — un `LlmAgent` con una tool, corrido con `InMemoryRunner`, imprimiendo la tool call y la respuesta final.
 - **`02_agente_con_memoria.py`** — dos sesiones distintas del mismo usuario; la segunda recupera, vía `MemoryService` + `load_memory`, un dato mencionado solo en la primera.
