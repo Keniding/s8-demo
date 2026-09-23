@@ -6,7 +6,7 @@ proyecto().agents.create_version(
     agent_name="demo-foundry-code-interpreter",
     definition=PromptAgentDefinition(
         model=MODELO,
-        instructions="Sos un asistente que puede ejecutar código Python cuando hace falta.",
+        instructions="Eres un asistente que puede ejecutar código Python cuando hace falta.",
         tools=[CodeInterpreterTool(container=AutoCodeInterpreterToolParam())],
     ),
 )
